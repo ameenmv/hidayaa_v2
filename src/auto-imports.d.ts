@@ -74,6 +74,7 @@ declare global {
   const useCssVars: typeof import('vue').useCssVars
   const useId: typeof import('vue').useId
   const useLink: typeof import('vue-router').useLink
+  const useMediaStore: typeof import('./stores/media.js').useMediaStore
   const useModel: typeof import('vue').useModel
   const useQuranStore: typeof import('./stores/quran.js').useQuranStore
   const useRoute: typeof import('vue-router').useRoute
@@ -166,6 +167,7 @@ declare module 'vue' {
     readonly useCssVars: UnwrapRef<typeof import('vue')['useCssVars']>
     readonly useId: UnwrapRef<typeof import('vue')['useId']>
     readonly useLink: UnwrapRef<typeof import('vue-router')['useLink']>
+    readonly useMediaStore: UnwrapRef<typeof import('./stores/media.js')['useMediaStore']>
     readonly useModel: UnwrapRef<typeof import('vue')['useModel']>
     readonly useQuranStore: UnwrapRef<typeof import('./stores/quran.js')['useQuranStore']>
     readonly useRoute: UnwrapRef<typeof import('vue-router')['useRoute']>

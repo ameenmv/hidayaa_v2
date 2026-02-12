@@ -22,6 +22,11 @@ const router = createRouter({
       path: '/video',
       name: 'video',
       component: () => import('@/views/Video.vue')
+    },
+    {
+      path: '/live',
+      name: 'live',
+      component: () => import('@/views/LiveTV.vue')
     }
   ],
   scrollBehavior(to, from, savedPosition) {

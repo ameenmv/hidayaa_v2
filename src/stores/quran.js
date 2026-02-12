@@ -1,3 +1,4 @@
+import api from '@/plugins/api'
 import { defineStore } from 'pinia'
 
 export const useQuranStore = defineStore('quran', {
@@ -24,12 +25,16 @@ export const useQuranStore = defineStore('quran', {
       this.error = null
       
       try {
-        // TODO: Replace with actual API call
-        // const response = await axios.get('https://api.quran.com/api/v4/chapters')
-        // this.surahs = response.data.chapters
-        
-        // Placeholder data
-        this.surahs = []
+        const response = await api.quran.getSurahs()
+        if (response.data && response.data.suwar) {
+          this.surahs = response.data.suwar.map(surah => ({
+            id: surah.id,
+            number: surah.id,
+            name: surah.name.trim(),
+            type: surah.makkia === 1 ? 'مكية' : 'مدنية',
+            ayahs: surah.verses_count || '?'
+          }))
+        }
       } catch (error) {
         this.error = error.message
         console.error('Error fetching surahs:', error)

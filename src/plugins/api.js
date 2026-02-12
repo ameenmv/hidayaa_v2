@@ -57,11 +57,14 @@ apiClient.interceptors.response.use(
 export default {
   // Quran API
   quran: {
-    getSurahs() {
-      return apiClient.get('/chapters')
+    getSurahs(language = 'ar') {
+      return axios.get('https://www.mp3quran.net/api/v3/suwar', {
+        params: { language }
+      })
     },
     
     getSurah(id) {
+      // Keep existing or update later if needed
       return apiClient.get(`/chapters/${id}`)
     },
     
@@ -76,11 +79,50 @@ export default {
 
   // Audio API
   audio: {
-    getReciters() {
-      return apiClient.get('/resources/recitations')
+    async getReciters(params = {}) {
+      // params: { language, reciter, rewaya, sura }
+      const url = new URL('https://www.mp3quran.net/api/v3/reciters')
+      if (params.language && params.language !== 'ar') {
+        url.searchParams.append('language', params.language)
+      }
+      
+      const response = await fetch(url.toString())
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+      return { data: await response.json() }
+    },
+
+    async getRecentReads(params = {}) {
+      const url = new URL('https://www.mp3quran.net/api/v3/recent_reads')
+      if (params.language && params.language !== 'ar') {
+        url.searchParams.append('language', params.language)
+      }
+      
+      const response = await fetch(url.toString())
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+      return { data: await response.json() }
+    },
+
+    async getLiveTV(params = {}) {
+      const url = new URL('https://www.mp3quran.net/api/v3/live-tv')
+      if (params.language && params.language !== 'ar') {
+        url.searchParams.append('language', params.language)
+      }
+      
+      const response = await fetch(url.toString())
+      if (!response.ok) {
+         // Fallback or retry logic could be added here
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+      return { data: await response.json() }
     },
     
+    // Legacy method - keeping for reference or unused parts
     getRecitation(reciterId, surahId) {
+       // Placeholder return
       return apiClient.get(`/recitations/${reciterId}/by_chapter/${surahId}`)
     }
   },
