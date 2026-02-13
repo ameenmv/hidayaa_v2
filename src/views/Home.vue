@@ -134,7 +134,7 @@
                 class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-60 group-hover:opacity-80 transition-opacity">
               </div>
               <div class="absolute bottom-0 inset-x-0 p-3 text-center">
-                <h3 class="text-white font-arabic font-bold text-lg leading-snug">{{ reciter.name }}</h3>
+                <h3 class="text-white font-arabic font-bold text-lg leading-snug">{{ reciter.nameAr }}</h3>
               </div>
             </div>
           </div>
@@ -201,26 +201,7 @@
               </div>
             </div>
 
-            <div class="flex flex-col md:flex-row items-end gap-6">
-              <div class="flex-1 w-full space-y-2">
-                <label class="block text-sm font-medium text-gray-600 dark:text-gray-300">اختر البلد</label>
-                <select
-                  class="w-full bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all">
-                  <option>مصر</option>
-                </select>
-              </div>
-              <div class="flex-1 w-full space-y-2">
-                <label class="block text-sm font-medium text-gray-600 dark:text-gray-300">اختر المدينة</label>
-                <select
-                  class="w-full bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all">
-                  <option>الفيوم</option>
-                </select>
-              </div>
-              <button
-                class="w-full md:w-auto bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-8 rounded-xl transition-colors">
-                عرض المواقيت
-              </button>
-            </div>
+            <LocationSelector />
           </div>
 
           <div class="p-8 bg-gray-50 dark:bg-gray-900/50">
@@ -230,10 +211,10 @@
                 class="w-full lg:w-1/3 bg-emerald-600 text-white rounded-2xl p-6 text-center relative overflow-hidden">
                 <div class="absolute inset-0 opacity-10 pattern-islamic"></div>
                 <div class="relative z-10">
-                  <p class="text-emerald-100 font-medium mb-2">الصلاة القادمة: الفجر</p>
-                  <h3 class="text-4xl font-bold mb-4 font-arabic">05:12 ص</h3>
+                  <p class="text-emerald-100 font-medium mb-2">الصلاة القادمة: {{ nextPrayer.name }}</p>
+                  <h3 class="text-4xl font-bold mb-4 font-arabic">{{ nextPrayer.time }}</h3>
                   <div class="inline-block bg-black/20 rounded-lg px-4 py-2 backdrop-blur-sm text-sm">
-                    الوقت المتبقي: 5 ساعات - 30 دقيقة
+                    {{ nextPrayer.remaining }}
                   </div>
                 </div>
               </div>
@@ -310,34 +291,117 @@
 </template>
 
 <script setup>
+import LocationSelector from '@components/prayer/LocationSelector.vue'
 import { useAudioStore } from '@stores/audio'
+import { usePrayerStore } from '@stores/prayer'
 import { useQuranStore } from '@stores/quran'
+import { storeToRefs } from 'pinia'
 import { computed, onMounted, ref } from 'vue'
 
 const quranStore = useQuranStore()
 const audioStore = useAudioStore()
+const prayerStore = usePrayerStore()
+const { timings, date, loading } = storeToRefs(prayerStore)
 
-const reciters = computed(() => audioStore.reciters.slice(0, 5))
-const surahs = computed(() => quranStore.surahs.slice(0, 6))
+const reciters = computed(() => audioStore.reciters ? audioStore.reciters.slice(0, 5) : [])
+const surahs = computed(() => quranStore.surahs ? quranStore.surahs.slice(0, 6) : [])
 
 onMounted(() => {
   quranStore.fetchSurahs()
   audioStore.fetchReciters()
+  prayerStore.fetchPrayerTimes()
 })
 
-const currentDate = ref({
-  hijri: '22 شَعْبان 1447',
-  gregorian: '10 فبراير 2026'
+const currentDate = computed(() => {
+  if (!date.value) return { hijri: '...', gregorian: '...' }
+
+  const h = date.value.hijri
+  const g = date.value.gregorian
+
+  return {
+    hijri: `${h.day} ${h.month.ar} ${h.year}`,
+    gregorian: `${g.day} ${g.month.en} ${g.year}` // e.g. 13 February 2026
+  }
 })
 
-const prayerTimes = ref([
-  { name: 'الفجر', time: '5:12 ص', icon: '🌅', active: true },
-  { name: 'الشروق', time: '6:39 ص', icon: '☀️', active: false },
-  { name: 'الظهر', time: '12:10 م', icon: '🕛', active: false },
-  { name: 'العصر', time: '3:18 م', icon: '🌤️', active: false },
-  { name: 'المغرب', time: '5:42 م', icon: '🌇', active: false },
-  { name: 'العشاء', time: '7:00 م', icon: '🌙', active: false },
-])
+// Helper to format 24h time to 12h with Arabic am/pm
+const formatTime = (timeStr) => {
+  if (!timeStr) return '--:--'
+  const [hours, minutes] = timeStr.split(':')
+  let h = parseInt(hours, 10)
+  const ampm = h >= 12 ? 'م' : 'ص'
+  h = h % 12
+  h = h ? h : 12
+  return `${h}:${minutes} ${ampm}`
+}
+
+const prayerTimes = computed(() => {
+  if (!timings.value) return []
+
+  const map = [
+    { key: 'Fajr', name: 'الفجر', icon: '🌅' },
+    { key: 'Sunrise', name: 'الشروق', icon: '☀️' },
+    { key: 'Dhuhr', name: 'الظهر', icon: '🕛' },
+    { key: 'Asr', name: 'العصر', icon: '🌤️' },
+    { key: 'Maghrib', name: 'المغرب', icon: '🌇' },
+    { key: 'Isha', name: 'العشاء', icon: '🌙' },
+  ]
+
+  return map.map(p => ({
+    name: p.name,
+    time: formatTime(timings.value[p.key]),
+    icon: p.icon,
+    active: false // We could implement "next prayer" logic here
+  }))
+})
+
+// Setup active prayer logic
+const nextPrayer = computed(() => {
+  if (!prayerTimes.value.length || !timings.value) return { name: '...', time: '...' }
+
+  const now = new Date()
+  const currentTime = now.getHours() * 60 + now.getMinutes()
+
+  // Create array of prayers with time in minutes
+  const prayers = [
+    { key: 'Fajr', name: 'الفجر', time: timings.value.Fajr },
+    { key: 'Sunrise', name: 'الشروق', time: timings.value.Sunrise },
+    { key: 'Dhuhr', name: 'الظهر', time: timings.value.Dhuhr },
+    { key: 'Asr', name: 'العصر', time: timings.value.Asr },
+    { key: 'Maghrib', name: 'المغرب', time: timings.value.Maghrib },
+    { key: 'Isha', name: 'العشاء', time: timings.value.Isha }
+  ]
+
+  let next = null
+  let diffMinutes = 0
+
+  for (const p of prayers) {
+    const [h, m] = p.time.split(':').map(Number)
+    const pMinutes = h * 60 + m
+    if (pMinutes > currentTime) {
+      next = p
+      diffMinutes = pMinutes - currentTime
+      break
+    }
+  }
+
+  // If no next prayer today, it means next is Fajr tomorrow
+  if (!next) {
+    next = prayers[0]
+    const [h, m] = next.time.split(':').map(Number)
+    const pMinutes = h * 60 + m
+    diffMinutes = (24 * 60 - currentTime) + pMinutes
+  }
+
+  const hours = Math.floor(diffMinutes / 60)
+  const minutes = diffMinutes % 60
+
+  return {
+    name: next.name,
+    time: formatTime(next.time),
+    remaining: `متبقي: ${hours} ساعة و ${minutes} دقيقة`
+  }
+})
 
 const azkar = ref([
   { title: 'أذكار الصباح', count: 31 },
@@ -345,7 +409,6 @@ const azkar = ref([
   { title: 'أذكار الاستيقاظ', count: 4 },
   { title: 'دعاء لبس الثوب', count: 1 },
 ])
-
 const radioStations = ref([
   { name: 'إذاعة إبراهيم الأخضر' },
   { name: 'إذاعة أبو بكر الشاطري' },

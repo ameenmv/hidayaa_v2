@@ -28,6 +28,7 @@ declare global {
   const isReadonly: typeof import('vue').isReadonly
   const isRef: typeof import('vue').isRef
   const isShallow: typeof import('vue').isShallow
+  const locations: typeof import('./utils/locations.js').locations
   const mapActions: typeof import('pinia').mapActions
   const mapGetters: typeof import('pinia').mapGetters
   const mapState: typeof import('pinia').mapState
@@ -76,6 +77,7 @@ declare global {
   const useLink: typeof import('vue-router').useLink
   const useMediaStore: typeof import('./stores/media.js').useMediaStore
   const useModel: typeof import('vue').useModel
+  const usePrayerStore: typeof import('./stores/prayer.js').usePrayerStore
   const useQuranStore: typeof import('./stores/quran.js').useQuranStore
   const useRoute: typeof import('vue-router').useRoute
   const useRouter: typeof import('vue-router').useRouter
@@ -121,6 +123,7 @@ declare module 'vue' {
     readonly isReadonly: UnwrapRef<typeof import('vue')['isReadonly']>
     readonly isRef: UnwrapRef<typeof import('vue')['isRef']>
     readonly isShallow: UnwrapRef<typeof import('vue')['isShallow']>
+    readonly locations: UnwrapRef<typeof import('./utils/locations.js')['locations']>
     readonly mapActions: UnwrapRef<typeof import('pinia')['mapActions']>
     readonly mapGetters: UnwrapRef<typeof import('pinia')['mapGetters']>
     readonly mapState: UnwrapRef<typeof import('pinia')['mapState']>
@@ -169,6 +172,7 @@ declare module 'vue' {
     readonly useLink: UnwrapRef<typeof import('vue-router')['useLink']>
     readonly useMediaStore: UnwrapRef<typeof import('./stores/media.js')['useMediaStore']>
     readonly useModel: UnwrapRef<typeof import('vue')['useModel']>
+    readonly usePrayerStore: UnwrapRef<typeof import('./stores/prayer.js')['usePrayerStore']>
     readonly useQuranStore: UnwrapRef<typeof import('./stores/quran.js')['useQuranStore']>
     readonly useRoute: UnwrapRef<typeof import('vue-router')['useRoute']>
     readonly useRouter: UnwrapRef<typeof import('vue-router')['useRouter']>

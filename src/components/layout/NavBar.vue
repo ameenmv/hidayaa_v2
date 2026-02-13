@@ -117,6 +117,7 @@ const navItems = [
   { name: 'القراء', path: '/audio', icon: '🎙️' },
   { name: 'بث مباشر', path: '/live', icon: '📺' },
   { name: 'الإذاعة', path: '/radio', icon: '📻' },
+  { name: 'مواقيت الصلاة', path: '/prayers', icon: '🕌' },
   { name: 'الأذكار', path: '/azkar', icon: '📿' }
 ]
 

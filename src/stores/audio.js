@@ -81,36 +81,19 @@ export const useAudioStore = defineStore('audio', {
     async fetchReciters(params = { language: 'ar' }) {
       this.isLoadingReciters = true
       try {
-        const response = await api.audio.getReciters(params)
-        if (response.data && response.data.reciters) {
-          this.reciters = response.data.reciters.map(r => ({
+        const response = await api.audio.getRecitationsList(params)
+        if (response.recitations) {
+          this.reciters = response.recitations.map(r => ({
             id: r.id,
-            name: r.name,
-            letter: r.letter,
-            // Use the first moshaf for simplicity or handle multiple
-            moshaf: r.moshaf ? r.moshaf.map(m => ({
-              id: m.id,
-              name: m.name,
-              server: m.server,
-              surahList: m.surah_list
-            })) : []
-          }))
+            nameAr: r.translated_name?.name || r.reciter_name,
+            style: r.style,
+            // Revert to speculative image logic based on ID or fallback
+            imageUrl: `https://static.qurancdn.com/images/reciters/images/${r.reciter_id}.jpeg` 
+          })).sort((a, b) => a.nameAr.localeCompare(b.nameAr, 'ar'))
         }
       } catch (error) {
         console.error('Error fetching reciters:', error)
-        // Fallback to static data if API fails
-        this.reciters = [
-          { id: 1, name: 'أحمد بن علي العجمي', letter: 'A', moshaf: [] },
-          { id: 2, name: 'عبدالرحمن السديس', letter: 'A', moshaf: [] },
-          { id: 3, name: 'علي بن عبدالرحمن الحذيفي', letter: 'A', moshaf: [] },
-          { id: 4, name: 'ناصر القطامي', letter: 'N', moshaf: [] },
-          { id: 5, name: 'محمد أيوب', letter: 'M', moshaf: [] },
-          { id: 6, name: 'محمود خليل الحصري', letter: 'M', moshaf: [] },
-          { id: 7, name: 'محمود علي البنا', letter: 'M', moshaf: [] },
-          { id: 8, name: 'محمد صديق المنشاوي', letter: 'M', moshaf: [] },
-          { id: 9, name: 'مشاري العفاسي', letter: 'M', moshaf: [] },
-          { id: 10, name: 'سعد الغامدي', letter: 'S', moshaf: [] }
-        ]
+        this.reciters = []
       } finally {
         this.isLoadingReciters = false
       }
@@ -130,6 +113,25 @@ export const useAudioStore = defineStore('audio', {
         }
       } catch (error) {
         console.error('Error fetching recent reads:', error)
+      }
+    },
+
+    async getRecitationFiles(reciterId) {
+      try {
+        const response = await api.audio.getChapterRecitations(reciterId)
+        if (response.audio_files) {
+          // Map to a consistent track format
+          return response.audio_files.map(file => ({
+            id: file.chapter_id, 
+            url: file.audio_url,
+            format: file.format,
+            title: `Surah ${file.chapter_id}` 
+          }))
+        }
+        return []
+      } catch (error) {
+        console.error('Error fetching recitation:', error)
+        return []
       }
     },
 

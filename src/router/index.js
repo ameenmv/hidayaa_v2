@@ -27,6 +27,21 @@ const router = createRouter({
       path: '/live',
       name: 'live',
       component: () => import('@/views/LiveTV.vue')
+    },
+    {
+      path: '/prayers',
+      name: 'prayers',
+      component: () => import('@/views/PrayerTimes.vue')
+    },
+    {
+      path: '/azkar',
+      name: 'azkar',
+      component: () => import('@/views/Azkar.vue')
+    },
+    {
+      path: '/radio',
+      name: 'radio',
+      component: () => import('@/views/Radio.vue')
     }
   ],
   scrollBehavior(to, from, savedPosition) {

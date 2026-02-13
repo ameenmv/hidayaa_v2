@@ -11,10 +11,12 @@ export {}
 /* prettier-ignore */
 declare module 'vue' {
   export interface GlobalComponents {
+    AudioPlayer: typeof import('./components/audio/AudioPlayer.vue')['default']
     BaseButton: typeof import('./components/base/BaseButton.vue')['default']
     BaseCard: typeof import('./components/base/BaseCard.vue')['default']
     Footer: typeof import('./components/layout/Footer.vue')['default']
     HelloWorld: typeof import('./components/HelloWorld.vue')['default']
+    LocationSelector: typeof import('./components/prayer/LocationSelector.vue')['default']
     NavBar: typeof import('./components/layout/NavBar.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']

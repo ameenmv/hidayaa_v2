@@ -93,6 +93,18 @@ export default {
       return { data: await response.json() }
     },
 
+    async getRecitationsList(params = {}) {
+      const url = new URL('https://api.quran.com/api/v4/resources/recitations')
+      if (params.language) {
+        url.searchParams.append('language', params.language)
+      }
+      const response = await fetch(url.toString())
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+      return await response.json()
+    },
+
     async getRecentReads(params = {}) {
       const url = new URL('https://www.mp3quran.net/api/v3/recent_reads')
       if (params.language && params.language !== 'ar') {
@@ -119,11 +131,46 @@ export default {
       }
       return { data: await response.json() }
     },
+
+    async getChapterRecitations(reciterId) {
+      const response = await fetch(`https://api.quran.com/api/v4/chapter_recitations/${reciterId}`)
+      if (!response.ok) {
+         throw new Error(`HTTP error! status: ${response.status}`)
+      }
+      return await response.json()
+    },
     
     // Legacy method - keeping for reference or unused parts
     getRecitation(reciterId, surahId) {
        // Placeholder return
       return apiClient.get(`/recitations/${reciterId}/by_chapter/${surahId}`)
+    }
+  },
+
+  appointment: {
+    // Add appointments related endpoints here if needed
+  },
+
+  // Prayer Times API
+  prayer: {
+    async getTimingsByCity(date, params = {}) {
+      // params: { city, country, method }
+      const url = new URL(`https://api.aladhan.com/v1/timingsByCity/${date}`)
+      
+      // Default params if not provided
+      if (!params.city) params.city = 'Cairo'
+      if (!params.country) params.country = 'Egypt'
+      if (!params.method) params.method = 5 // Egyptian General Authority of Survey
+      
+      Object.keys(params).forEach(key => 
+        url.searchParams.append(key, params[key])
+      )
+      
+      const response = await fetch(url.toString())
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+      return await response.json()
     }
   },
 
